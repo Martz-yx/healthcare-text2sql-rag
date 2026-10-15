@@ -1,0 +1,36 @@
+name: 'his_ai_analytics'
+version: '1.0.0'
+config-version: 2
+
+profile: 'his_ai_analytics'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# All models are views for real-time data (no cron needed).
+# dbt run only needs to execute when model definitions change.
+models:
+  his_ai_analytics:
+    # Grant read access on all models to the read-only role used by the Text-to-SQL app
+    +grants:
+      select: ["{{ env_var('DBT_READONLY_ROLE', 'readonly_ai') }}"]
+    +materialized: view
+    staging:
+      +tags: ["staging"]
+    intermediate:
+      +tags: ["intermediate"]
+    marts:
+      +materialized: view
+      ambulatoria:
+        +tags: ["ambulatoria"]
+      internacion:
+        +tags: ["internacion"]
+

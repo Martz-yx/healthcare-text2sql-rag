@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIS AI - Admin Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #f4f7f6; color: #333; }
+        h1 { text-align: center; color: #2c3e50; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .stat-value { font-size: 2em; font-weight: bold; color: #3498db; }
+    </style>
+</head>
+<body>
+    <h1>Panel de Administración: HIS AI</h1>
+    <div class="grid">
+        <div class="card">
+            <h3>Resumen General</h3>
+            <p>Total Conversaciones: <span id="total-threads" class="stat-value">0</span></p>
+            <p>Total Feedbacks Recibidos: <span id="total-feedback" class="stat-value">0</span></p>
+        </div>
+        <div class="card">
+            <h3>Distribución de Feedback</h3>
+            <canvas id="feedbackChart"></canvas>
+        </div>
+    </div>
+    <script>
+        fetch('/api/admin/stats')
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    document.getElementById('total-threads').innerText = data.threads;
+                    document.getElementById('total-feedback').innerText = data.feedback.total;
+                    
+                    var ctx = document.getElementById('feedbackChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Positivo (Útil)', 'Negativo (Incorrecto)'],
+                            datasets: [{
+                                data: [data.feedback.positive, data.feedback.negative],
+                                backgroundColor: ['#2ecc71', '#e74c3c']
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
+                } else {
+                    alert('Error cargando estadísticas: ' + data.message);
+                }
+            })
+            .catch(err => console.error("Error fetching stats:", err));
+    </script>
+</body>
+</html>

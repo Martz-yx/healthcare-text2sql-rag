@@ -1,0 +1,18 @@
+FROM ghcr.io/dbt-labs/dbt-postgres:1.9.0
+
+WORKDIR /usr/app
+
+# Override with the timezone of your data source so the daily batch window aligns with local midnight
+ENV TZ=UTC
+
+# Copy the dbt project files into the container
+COPY dbt_project/ /usr/app/dbt_project/
+
+# Download the latest dbt docs index.html
+RUN mkdir -p /usr/app/dbt_project/target && \
+    curl -o /usr/app/dbt_project/target/index.html https://raw.githubusercontent.com/dbt-labs/dbt-docs/main/index.html || true
+
+EXPOSE 8080
+
+# Set the entrypoint to run our python scheduler
+ENTRYPOINT ["python", "/usr/app/dbt_project/scripts/run_scheduler.py"]

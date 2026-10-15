@@ -1,0 +1,151 @@
+# Sources: raw hospital information system (HIS) tables from PostgreSQL public schema.
+# These are the replicated operational tables that dbt models read from.
+
+version: 2
+
+sources:
+  - name: his
+    description: "Tablas del Sistema de Información Hospitalaria (HIS), replicadas desde la base de datos operativa."
+    database: "{{ env_var('DBT_PG_DBNAME', 'his_db') }}"
+    schema: public
+
+    tables:
+      # ── Core entities ──
+      - name: paciente
+        description: "Tabla maestra de pacientes. PK: codigo_paciente (cédula o pasaporte)."
+      - name: usuario
+        description: "Usuarios del sistema (médicos, enfermeros, administrativos)."
+      - name: establecimiento_usuario
+        description: "Relación entre usuarios y establecimientos."
+      - name: profesional
+        description: "Extensión de usuario con datos profesionales/licencia médica."
+
+      # ── Organization ──
+      - name: servicio
+        description: "Catálogo de servicios/departamentos médicos (Medicina General, Pediatría, etc.)."
+      - name: establecimiento
+        description: "Tabla maestra de establecimientos de salud (hospitales, USF)."
+      - name: clase
+        description: "Clasificación jerárquica de servicios (CONSULTORIOS, INTERNADOS, URGENCIAS, etc.)."
+
+      # ── CIE-10 ──
+      - name: cie10
+        description: "Catálogo de diagnósticos CIE-10 (nivel más detallado). PK compuesta: (codigo_cie10a, codigo_cie10b)."
+      - name: subgrupo_cie10
+        description: "Subgrupos CIE-10 (categoría de 3 caracteres)."
+      - name: grupo_cie10
+        description: "Grupos CIE-10 (agrupación intermedia dentro de un capítulo)."
+      - name: cap_cie10
+        description: "Capítulos CIE-10 (nivel más alto de la jerarquía)."
+
+      # ── Medications ──
+      - name: medicamento_total
+        description: "Catálogo de medicamentos por establecimiento/sucursal."
+      - name: via_medicine
+        description: "Catálogo de vías de administración de medicamentos (Oral, IV, IM, etc.)."
+      - name: unidades_recetadas
+        description: "Catálogo de unidades de dosis para recetas (mg, ml, gr, etc.)."
+
+      # ── Geography ──
+      - name: region
+        description: "Catálogo de regiones sanitarias (por lo general, equivalente a departamentos)."
+      - name: departamento
+        description: "Catálogo de departamentos (equivalente a provincia/estado)."
+      - name: distrito
+        description: "Catálogo de distritos dentro de un departamento."
+      - name: barrio
+        description: "Catálogo de barrios dentro de un distrito."
+      - name: pais
+        description: "Catálogo de países/nacionalidades."
+
+      # ── Demographics ──
+      - name: etnia
+        description: "Catálogo de etnias."
+      - name: tipo_edad
+        description: "Catálogo de unidades de edad (1=Año, 2=Mes, 3=Día, 4=Hora, 5=Minuto)."
+      - name: tipo_sangre
+        description: "Catálogo de tipos de sangre."
+
+      # ── Ambulatoria ──
+      - name: paciente_asignacion
+        description: "Tabla central de ambulatoria: cada fila es un turno/visita. PK: (codigo_establecimiento, codigo_asignacion)."
+      - name: consulta
+        description: "Registro de consulta médica. 1:1 con paciente_asignacion."
+      - name: preconsulta
+        description: "Registro de triaje/preconsulta (signos vitales)."
+      - name: consulta_diagnostico
+        description: "Diagnósticos CIE-10 registrados en una consulta ambulatoria."
+      - name: consulta_medicamento
+        description: "Medicamentos recetados en una consulta ambulatoria."
+      - name: consulta_procedimiento
+        description: "Procedimientos solicitados/realizados en una consulta (laboratorio, imágenes, CIE-9)."
+      - name: long_term_prescription
+        description: "Prescripciones a largo plazo (medicación crónica) — cabecera."
+      - name: long_term_prescription_details
+        description: "Detalle de cada medicamento en una prescripción a largo plazo."
+
+      # ── Trauma (ambulatorio) ──
+      - name: trauma_consulta
+        description: "Consulta de trauma con scores (Glasgow, RTS, IPT, MESS, AIS, TRISS)."
+      - name: trauma_consulta_diagnostico
+        description: "Diagnósticos CIE-10 de una consulta de trauma."
+      - name: trauma_preconsulta
+        description: "Preconsulta de trauma: datos del evento traumático."
+
+      # ── Internación — Infraestructura ──
+      - name: edificio
+        description: "Edificios del hospital. Jerarquía: edificio > piso > sala > cama."
+      - name: piso
+        description: "Pisos dentro de un edificio."
+      - name: sala
+        description: "Salas/habitaciones dentro de un piso. Cada sala pertenece a un servicio."
+      - name: cama
+        description: "Camas físicas del hospital."
+      - name: cama_estado
+        description: "Estado actual de cada cama (DISPONIBLE, OCUPADO, PREPARACIÓN, AISLADO, EN_REPARACIÓN)."
+
+      # ── Internación — Core ──
+      - name: hospitalario_asignacion
+        description: "Tabla central de internación. Cada fila es una asignación paciente-cama. PK: (codigo_establecimiento, codigo_asignacion, orden_asignacion)."
+      - name: hospitalario_orden_internacion
+        description: "Orden de internación: solicitud médica para internar."
+      - name: hospitalario_doctor_nota_inicial
+        description: "Nota inicial del médico para una internación."
+      - name: hospitalario_doctor_diagnostico
+        description: "Diagnósticos CIE-10 de la nota inicial de internación."
+      - name: hospitalario_evolucion
+        description: "Notas de evolución médica (formato SOAP) durante la internación."
+
+      # ── Internación — Medicación ──
+      - name: hospitalario_medicaciones_soluciones
+        description: "Medicaciones y soluciones indicadas durante la internación."
+      - name: hospitalario_registro_medicacion
+        description: "Registro de administración de medicamentos por enfermería."
+
+      # ── Internación — Cirugía, interconsulta, alta ──
+      - name: hospitalario_cirugia_procedimiento
+        description: "Procedimientos quirúrgicos realizados durante la internación."
+      - name: hospitalario_pedido_interconsulta
+        description: "Pedidos de interconsulta entre servicios."
+      - name: hospitalario_doctor_datos_alta
+        description: "Datos de alta médica con diagnósticos de egreso."
+      - name: hospitalario_gestion_solicitar_transferencia
+        description: "Solicitudes de transferencia de cama o servicio."
+
+      # ── Internación — Enfermería ──
+      - name: hospitalario_nursing_atencion_enfermeria
+        description: "Atención de enfermería usando marco NANDA."
+      - name: hospitalario_nursing_noc_nic
+        description: "Intervenciones NOC/NIC de enfermería."
+
+      # ── Internación — Dieta y medidas ──
+      - name: hospitalario_indicacion_dieta
+        description: "Indicaciones de dieta para el paciente internado."
+      - name: hospitalario_indicacion_medidas
+        description: "Medidas de enfermería indicadas por el médico."
+
+      # ── Internación — Lookup tables ──
+      - name: condicion_egreso
+        description: "Condición del paciente al egreso (CURADO, MEJORADO, ESTACIONARIO, EMPEORADO, FALLECIDO)."
+      - name: tipo_egreso
+        description: "Tipo de egreso (alta médica, traslado, retiro voluntario, fuga, defunción)."

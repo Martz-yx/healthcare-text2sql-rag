@@ -1,0 +1,16 @@
+# Ignore everything
+*
+
+# Allow only what the image needs
+!app/
+!chainlit.md
+!requirements.txt
+!flyway/
+!Dockerfile.flyway
+!dbt_project/
+
+# Re-exclude junk inside allowed dirs
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/.env*

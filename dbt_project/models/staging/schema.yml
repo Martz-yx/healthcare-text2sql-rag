@@ -1,0 +1,116 @@
+version: 2
+models:
+- name: stg_barrio
+  description: Modelo staging base para la tabla barrio.
+- name: stg_cama
+  description: 'stg_cama: Vista limpia de camas con su ubicación completa y estado
+    actual.'
+- name: stg_cama_estado
+  description: Modelo staging base para la tabla cama_estado.
+- name: stg_cap_cie10
+  description: Modelo staging base para la tabla cap_cie10.
+- name: stg_cie10
+  description: 'stg_cie10: Vista limpia de diagnósticos CIE-10 con jerarquía completa.'
+- name: stg_clase
+  description: Modelo staging base para la tabla clase.
+- name: stg_condicion_egreso
+  description: Modelo staging base para la tabla condicion_egreso.
+- name: stg_consulta
+  description: Modelo staging base para la tabla consulta.
+- name: stg_consulta_diagnostico
+  description: Modelo staging base para la tabla consulta_diagnostico.
+- name: stg_consulta_medicamento
+  description: Modelo staging base para la tabla consulta_medicamento.
+- name: stg_consulta_procedimiento
+  description: Modelo staging base para la tabla consulta_procedimiento.
+- name: stg_departamento
+  description: Modelo staging base para la tabla departamento.
+- name: stg_distrito
+  description: Modelo staging base para la tabla distrito.
+- name: stg_edificio
+  description: Modelo staging base para la tabla edificio.
+- name: stg_establecimiento
+  description: 'stg_establecimiento: Vista limpia de establecimientos de salud.'
+- name: stg_establecimiento_usuario
+  description: Modelo staging base para la tabla establecimiento_usuario.
+- name: stg_etnia
+  description: Modelo staging base para la tabla etnia.
+- name: stg_grupo_cie10
+  description: Modelo staging base para la tabla grupo_cie10.
+- name: stg_hospitalario_asignacion
+  description: Modelo staging base para la tabla hospitalario_asignacion.
+- name: stg_hospitalario_cirugia_procedimiento
+  description: Modelo staging base para la tabla hospitalario_cirugia_procedimiento.
+- name: stg_hospitalario_doctor_datos_alta
+  description: Modelo staging base para la tabla hospitalario_doctor_datos_alta.
+- name: stg_hospitalario_doctor_diagnostico
+  description: Modelo staging base para la tabla hospitalario_doctor_diagnostico.
+- name: stg_hospitalario_doctor_nota_inicial
+  description: Modelo staging base para la tabla hospitalario_doctor_nota_inicial.
+- name: stg_hospitalario_evolucion
+  description: Modelo staging base para la tabla hospitalario_evolucion.
+- name: stg_hospitalario_gestion_solicitar_transferencia
+  description: Modelo staging base para la tabla hospitalario_gestion_solicitar_transferencia.
+- name: stg_hospitalario_indicacion_dieta
+  description: Modelo staging base para la tabla hospitalario_indicacion_dieta.
+- name: stg_hospitalario_indicacion_medidas
+  description: Modelo staging base para la tabla hospitalario_indicacion_medidas.
+- name: stg_hospitalario_medicaciones_soluciones
+  description: Modelo staging base para la tabla hospitalario_medicaciones_soluciones.
+- name: stg_hospitalario_nursing_atencion_enfermeria
+  description: Modelo staging base para la tabla hospitalario_nursing_atencion_enfermeria.
+- name: stg_hospitalario_nursing_noc_nic
+  description: Modelo staging base para la tabla hospitalario_nursing_noc_nic.
+- name: stg_hospitalario_orden_internacion
+  description: Modelo staging base para la tabla hospitalario_orden_internacion.
+- name: stg_hospitalario_pedido_interconsulta
+  description: Modelo staging base para la tabla hospitalario_pedido_interconsulta.
+- name: stg_hospitalario_registro_medicacion
+  description: Modelo staging base para la tabla hospitalario_registro_medicacion.
+- name: stg_long_term_prescription
+  description: Modelo staging base para la tabla long_term_prescription.
+- name: stg_long_term_prescription_details
+  description: Modelo staging base para la tabla long_term_prescription_details.
+- name: stg_medicamento
+  description: 'stg_medicamento: Vista limpia del catálogo de medicamentos.'
+- name: stg_medicamento_total
+  description: Modelo staging base para la tabla medicamento_total.
+- name: stg_paciente
+  description: 'stg_paciente: Vista limpia de pacientes con columnas decodificadas.'
+- name: stg_paciente_asignacion
+  description: Modelo staging base para la tabla paciente_asignacion.
+- name: stg_pais
+  description: Modelo staging base para la tabla pais.
+- name: stg_piso
+  description: Modelo staging base para la tabla piso.
+- name: stg_preconsulta
+  description: Modelo staging base para la tabla preconsulta.
+- name: stg_profesional
+  description: Modelo staging base para la tabla profesional.
+- name: stg_region
+  description: Modelo staging base para la tabla region.
+- name: stg_sala
+  description: Modelo staging base para la tabla sala.
+- name: stg_servicio
+  description: 'stg_servicio: Vista limpia de servicios/departamentos médicos.'
+- name: stg_subgrupo_cie10
+  description: Modelo staging base para la tabla subgrupo_cie10.
+- name: stg_tipo_edad
+  description: Modelo staging base para la tabla tipo_edad.
+- name: stg_tipo_egreso
+  description: Modelo staging base para la tabla tipo_egreso.
+- name: stg_tipo_sangre
+  description: Modelo staging base para la tabla tipo_sangre.
+- name: stg_trauma_consulta
+  description: Modelo staging base para la tabla trauma_consulta.
+- name: stg_trauma_consulta_diagnostico
+  description: Modelo staging base para la tabla trauma_consulta_diagnostico.
+- name: stg_trauma_preconsulta
+  description: Modelo staging base para la tabla trauma_preconsulta.
+- name: stg_unidades_recetadas
+  description: Modelo staging base para la tabla unidades_recetadas.
+- name: stg_usuario
+  description: 'stg_usuario: Vista limpia de usuarios del sistema (médicos, enfermeros,
+    admin).'
+- name: stg_via_medicine
+  description: Modelo staging base para la tabla via_medicine.

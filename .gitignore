@@ -1,0 +1,26 @@
+.env
+.claude/setting.local.json
+.claude/projects/
+.chainlit/config.toml
+__pycache__/
+*.pyc
+
+# dbt
+dbt_project/target/
+dbt_project/dbt_packages/
+dbt_project/logs/
+
+# App runtime data & exports
+app/chroma_data/
+app/public/exports/*
+app/scratch.py
+
+# Virtual environment and node modules
+.venv/
+node_modules/
+*.log
+logs/*.sql
+logs/*.txt
+.DS_Store
+
+

@@ -1,0 +1,49 @@
+services:
+  vllm:
+    image: vllm/vllm-openai:v0.21.0
+    container_name: vllm_big_brain
+    runtime: nvidia
+    ipc: host
+    shm_size: "16g"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+      - ~/.cache/vllm:/root/.cache/vllm
+    environment:
+      - VLLM_ATTENTION_BACKEND=FLASH_ATTN
+      - VLLM_API_KEY=${VLLM_BIG_BRAIN_API_KEY}
+      - HF_TOKEN=${HF_TOKEN}
+    command: >
+      --api-key ${VLLM_BIG_BRAIN_API_KEY}
+      --model LargitData/gemma-4-31b-it-fp8
+      --served-model-name gemma-4-31B-it
+      --max-model-len 32768
+      --gpu-memory-utilization 0.95
+      --max-num-seqs 16
+      --max-num-batched-tokens 16384
+      --enable-chunked-prefill
+      --enable-prefix-caching
+      --kv-cache-dtype fp8_e4m3
+      --generation-config auto
+      --tool-call-parser gemma4
+      --enable-auto-tool-choice
+      --reasoning-parser gemma4
+      --trust-remote-code
+      --limit-mm-per-prompt '{"image": 0, "video": 0, "audio": 0}'
+      --host 0.0.0.0
+      --port 8000
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 300s
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: always

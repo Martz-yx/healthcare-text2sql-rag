@@ -1,0 +1,122 @@
+services:
+  flyway:
+    build:
+      context: .
+      dockerfile: Dockerfile.flyway
+    container_name: flyway
+    command: migrate
+    environment:
+      - FLYWAY_URL=jdbc:postgresql://chainlit-db:5432/chainlit
+      - FLYWAY_USER=chainlit
+      - FLYWAY_PASSWORD=${CHAINLIT_DB_PASSWORD:-changeme}
+    depends_on:
+      chainlit-db:
+        condition: service_healthy
+
+  dbt-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.dbt
+    container_name: dbt-runner
+    ports:
+      - "8080:8080"
+    environment:
+      - DBT_PROFILES_DIR=/usr/app/dbt_project
+      - DBT_PG_HOST=${PG_HOST}
+      - DBT_PG_PORT=${PG_PORT:-5432}
+      - DBT_PG_USER=${DBT_PG_USER}
+      - DBT_PG_PASSWORD=${DBT_PG_PASSWORD}
+      - DBT_PG_DBNAME=${PG_DBNAME}
+      - DBT_READONLY_ROLE=${PG_USER}
+      - TZ=${TZ:-UTC}
+    # Scheduler: runs the dbt incremental batch layer daily at 01:00 (Lambda architecture)
+    entrypoint: ["python", "/usr/app/dbt_project/scripts/run_scheduler.py"]
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8080')\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+
+
+
+  text2sql:
+    build: .
+    container_name: text2sql
+    ports:
+      - "80:80"
+    volumes:
+      - text2sql_chromadb:/data/chromadb
+      - text2sql_models:/root/.cache/torch/sentence_transformers
+    environment:
+      - PG_HOST=${PG_HOST}
+      - PG_PORT=${PG_PORT:-5432}
+      - PG_DBNAME=${PG_DBNAME}
+      - PG_USER=${PG_USER}
+      - PG_PASSWORD=${PG_PASSWORD}
+      - CHROMA_PATH=/data/chromadb
+      - MAX_CONTEXT_ITEMS=${MAX_CONTEXT_ITEMS}
+      - MAX_RESULT_ROWS=${MAX_RESULT_ROWS}
+      - MAX_FULL_DDL=${MAX_FULL_DDL}
+      - MAX_SUMMARY_DDL=${MAX_SUMMARY_DDL}
+      - MAX_HISTORY_TURNS=${MAX_HISTORY_TURNS:-10}
+      - SEED_ON_STARTUP=${SEED_ON_STARTUP:-true}
+      - AUTO_TRAIN_ON_STARTUP=${AUTO_TRAIN_ON_STARTUP:-false}
+      - VLLM_BIG_BRAIN_BASE_URL=${VLLM_BIG_BRAIN_BASE_URL}
+      - VLLM_BIG_BRAIN_MODEL=${VLLM_BIG_BRAIN_MODEL:-gemma-4-31B-it}
+      - VLLM_BIG_BRAIN_TEMPERATURE=${VLLM_BIG_BRAIN_TEMPERATURE:-0.1}
+      - VLLM_BIG_BRAIN_TOP_P=${VLLM_BIG_BRAIN_TOP_P:-0.95}
+      - VLLM_BIG_BRAIN_TOP_K=${VLLM_BIG_BRAIN_TOP_K:-64}
+      - VLLM_BIG_BRAIN_API_KEY=${VLLM_BIG_BRAIN_API_KEY}
+      - VLLM_SMALL_BRAIN_BASE_URL=${VLLM_SMALL_BRAIN_BASE_URL}
+      - VLLM_SMALL_BRAIN_MODEL=${VLLM_SMALL_BRAIN_MODEL:-gemma-4-E4B-it}
+      - VLLM_SMALL_BRAIN_TEMPERATURE=${VLLM_SMALL_BRAIN_TEMPERATURE:-1.0}
+      - VLLM_SMALL_BRAIN_TOP_P=${VLLM_SMALL_BRAIN_TOP_P:-0.95}
+      - VLLM_SMALL_BRAIN_TOP_K=${VLLM_SMALL_BRAIN_TOP_K:-64}
+      - VLLM_SMALL_BRAIN_API_KEY=${VLLM_SMALL_BRAIN_API_KEY}
+      - CHAINLIT_AUTH_SECRET=${CHAINLIT_AUTH_SECRET}
+      - CHAINLIT_DB_HOST=chainlit-db
+      - CHAINLIT_DB_PORT=5432
+      - CHAINLIT_DB_USER=chainlit
+      - CHAINLIT_DB_PASSWORD=${CHAINLIT_DB_PASSWORD:-changeme}
+      - CHAINLIT_DB_NAME=chainlit
+      - CHAINLIT_DB_URL=postgresql+asyncpg://chainlit:${CHAINLIT_DB_PASSWORD:-changeme}@chainlit-db:5432/chainlit
+      - DEBUG_CHAT=${DEBUG_CHAT:-false}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:80/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 300s
+    depends_on:
+      chainlit-db:
+        condition: service_healthy
+      flyway:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  chainlit-db:
+    image: postgres:16.14
+    container_name: chainlit-db
+    ports:
+      - "5432:5432"
+    volumes:
+      - chainlit_db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=chainlit
+      - POSTGRES_USER=chainlit
+      - POSTGRES_PASSWORD=${CHAINLIT_DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chainlit -d chainlit"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  text2sql_chromadb:
+  text2sql_models:
+  chainlit_db_data:

@@ -1,0 +1,60 @@
+version: 2
+
+models:
+  - name: mart_internados_activos
+    description: >
+      Pacientes actualmente internados en el hospital.
+      REGLA DE NEGOCIO CODIFICADA: fin_del_evento='0' AND is_outdated=false.
+      Incluye paciente, médico tratante, ubicación completa (edificio/piso/sala/cama),
+      servicio, hospital, edad al ingreso, y días internado.
+      Para contar internados: SELECT COUNT(*) FROM mart_internados_activos.
+      Para internados por servicio: SELECT servicio, COUNT(*) FROM mart_internados_activos GROUP BY servicio.
+    columns:
+      - name: codigo_asignacion
+        tests:
+          - not_null
+      - name: codigo_paciente
+        tests:
+          - not_null
+
+  - name: mart_altas_egresos
+    description: >
+      Histórico de altas/egresos hospitalarios finalizados.
+      Incluye diagnóstico de egreso, condición (curado/mejorado/fallecido),
+      tipo de egreso (alta médica/traslado/fuga/defunción), días de estancia,
+      y datos de seguimiento post-alta.
+
+  - name: mart_ocupacion_camas
+    description: >
+      Estado actual BÁSICO y rápido de las camas.
+      Contiene el estado de la cama y el servicio, pero NO contiene datos de piso, edificio ni sala.
+      Úsalo SIEMPRE por defecto para preguntas generales como "¿Cuántas camas libres hay?".
+      Para camas disponibles: SELECT COUNT(*) FROM mart_ocupacion_camas WHERE estado = 'Disponible'.
+
+  - name: mart_ubicacion_camas
+    description: >
+      Ubicación detallada y extendida de las camas.
+      Contiene los cruces pesados: estado, servicio, piso, sala y edificio.
+      Úsalo SOLO cuando el usuario pregunte por ubicaciones específicas (ej. "¿Camas en el piso 3?").
+      Para camas en piso 3: SELECT COUNT(*) FROM mart_ubicacion_camas WHERE piso = '3'.
+
+  - name: mart_cirugias
+    description: >
+      Procedimientos quirúrgicos realizados durante internaciones.
+      Incluye paciente, diagnósticos pre/post operatorios, duración,
+      cirujano (JSON), complicaciones, y muestras de patología.
+      Excluye cirugías eliminadas.
+
+  - name: mart_evoluciones
+    description: >
+      Notas de evolución médica (formato SOAP) durante internaciones.
+      Cada fila tiene los 4 componentes: Subjetivo, Objetivo, Análisis, Plan.
+      Incluye médico que escribió y servicio.
+
+  - name: mart_camas_disponibilidad_resumen
+    description: >
+      Resumen agregado de camas por hospital, servicio y estado.
+      Permite a la IA responder preguntas rápidamente como "¿Cuántas camas disponibles hay en Urgencias?".
+      A diferencia de las otras tablas de camas, esta agrupa directamente por establecimiento y estado,
+      siendo la tabla más rápida para dashboards y preguntas directas de disponibilidad agregada.
+

@@ -1,0 +1,64 @@
+version: 2
+
+models:
+  - name: mart_consultas
+    description: >
+      Consultas ambulatorias con todos los datos pre-unidos: paciente, médico,
+      servicio, hospital, región y distrito del hospital, datos clínicos (motivo, historia, impresión diagnóstica),
+      tipo de consulta, destino del paciente, y residencia del paciente (departamento, distrito, barrio).
+      Para consultas de hoy: SELECT * FROM mart_consultas WHERE fecha_consulta = CURRENT_DATE.
+      Para consultas por servicio: SELECT servicio, COUNT(*) FROM mart_consultas GROUP BY servicio.
+
+  - name: mart_diagnosticos_ambulatorios
+    description: >
+      Diagnósticos CIE-10 de consultas ambulatorias con jerarquía CIE-10 y geografía completa pre-unidas.
+      IMPORTANTE: Contiene directamente los nombres textuales 'region' (región sanitaria del hospital),
+      'region_residencia' (región sanitaria del paciente), 'departamento_residencia' y 'distrito_residencia'.
+      NO REQUIERE NINGÚN JOIN ADICIONAL con public.distrito, public.region ni public.departamento.
+      Para diagnósticos por región del hospital: SELECT region, COUNT(DISTINCT codigo_paciente) FROM mart_diagnosticos_ambulatorios GROUP BY region.
+      Para diagnósticos por región de residencia del paciente: SELECT region_residencia, COUNT(DISTINCT codigo_paciente) FROM mart_diagnosticos_ambulatorios GROUP BY region_residencia.
+
+
+  - name: mart_medicamentos_recetados
+    description: >
+      Medicamentos recetados en consultas ambulatorias con catálogo pre-unido.
+      Incluye nombre del medicamento, dosis, instrucciones, días de tratamiento,
+      cantidad recetada vs dispensada, y estado de la receta.
+      Excluye recetas eliminadas.
+      Para medicamentos más recetados: SELECT medicamento, COUNT(*) FROM mart_medicamentos_recetados GROUP BY medicamento ORDER BY COUNT(*) DESC.
+
+  - name: mart_signos_vitales
+    description: >
+      Signos vitales registrados en triaje/preconsulta.
+      Incluye: peso, talla, IMC, temperatura, presión arterial (sistólica/diastólica),
+      pulso, frecuencia respiratoria, saturación O2, estado nutricional,
+      datos de embarazo, y medidas pediátricas.
+
+  - name: mart_totales_consultas_por_tipo
+    description: >
+      Vista materializada que agrupa la cantidad total de consultas y cantidad total de pacientes distintos,
+      agrupados por fecha de consulta, establecimiento, región, y tipo de consulta
+      (Ambulatoria, Urgencia, Teleconsulta, Internación, etc.).
+      También contabiliza el personal involucrado (médicos, admisionistas, farmacéuticos y enfermeros).
+      Ideal para preguntas estadísticas globales sobre rendimiento por hospital y totales de recursos humanos.
+
+  - name: mart_diagnosticos_top_diarios
+    description: >
+      Vista materializada que cuenta la cantidad de veces que se registra cada diagnóstico CIE-10
+      por fecha y establecimiento.
+      Ideal para saber cuál es el diagnóstico más repetido de un día en particular en un hospital.
+
+  - name: mart_pacientes_detalle
+    description: >
+      Datos demográficos detallados del paciente. Cruza la tabla principal de pacientes con
+      catálogos auxiliares como país, región, distrito y barrio. 
+      Ideal para responder preguntas sobre la población (ej: pacientes de un distrito específico, 
+      por grupo etario, sexo, o país de origen).
+
+  - name: mart_paciente_historia_clinica
+    description: >
+      Línea de tiempo (timeline) unificada de todas las interacciones de un paciente
+      dentro de la red de salud. Combina atenciones ambulatorias, urgencias e internaciones
+      en un solo flujo ordenado de forma descendente por fecha de atención.
+      Ideal para conocer el historial médico completo o responder "qué atenciones tuvo este paciente".
+
